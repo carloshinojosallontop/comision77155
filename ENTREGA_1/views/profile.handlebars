@@ -1,0 +1,79 @@
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>Mi Perfil</h3>
+                <button class="btn btn-outline-danger" onclick="logout()">Cerrar Sesión</button>
+            </div>
+            <div class="card-body">
+                <div id="userInfo">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-circle fa-5x text-muted"></i>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Nombre:</strong>
+                        </div>
+                        <div class="col-sm-9" id="userName">
+                            Cargando...
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Email:</strong>
+                        </div>
+                        <div class="col-sm-9" id="userEmail">
+                            Cargando...
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Edad:</strong>
+                        </div>
+                        <div class="col-sm-9" id="userAge">
+                            Cargando...
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Rol:</strong>
+                        </div>
+                        <div class="col-sm-9">
+                            <span id="userRole" class="badge bg-primary">Cargando...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <strong>Miembro desde:</strong>
+                        </div>
+                        <div class="col-sm-9" id="userSince">
+                            Cargando...
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="adminSection" class="mt-4" style="display: none;">
+                    <hr>
+                    <h5>Panel de Administración</h5>
+                    <button class="btn btn-warning" onclick="testAdminAccess()">Probar Acceso Admin</button>
+                    <div id="adminResult" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <a href="/" class="btn btn-secondary">Volver al Inicio</a>
+        </div>
+    </div>
+</div>
+
+<!-- FontAwesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- Script específico para perfil -->
+<script src="/js/profile.js"></script>

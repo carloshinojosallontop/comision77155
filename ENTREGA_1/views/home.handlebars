@@ -1,0 +1,65 @@
+<div class="jumbotron bg-light p-5 rounded-3">
+    <div id="welcomeContent">
+        <h1 class="display-4">¡Bienvenido!</h1>
+        <p class="lead">Esta es la página principal de tu aplicación con autenticación JWT.</p>
+        <hr class="my-4">
+        
+        <!-- Contenido para usuarios no autenticados -->
+        <div id="guestContent">
+            <p>Puedes iniciar sesión o registrarte para acceder a todas las funcionalidades.</p>
+            <div class="mt-4">
+                <a class="btn btn-primary btn-lg me-3" href="/login" role="button">Iniciar Sesión</a>
+                <a class="btn btn-success btn-lg" href="/register" role="button">Registrarse</a>
+            </div>
+        </div>
+        
+        <!-- Contenido para usuarios autenticados -->
+        <div id="userContent" style="display: none;">
+            <p>¡Hola! Ya tienes una sesión activa. Puedes acceder a tu perfil y explorar todas las funcionalidades.</p>
+            <div class="mt-4">
+                <a class="btn btn-primary btn-lg me-3" href="/profile" role="button">Mi Perfil</a>
+                <button class="btn btn-outline-danger btn-lg" onclick="logout()" role="button">Cerrar Sesión</button>
+            </div>
+            
+            <div class="mt-4" id="userWelcome">
+                <!-- Se carga dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
+                <h5 class="card-title">Seguridad JWT</h5>
+                <p class="card-text">Sistema de autenticación basado en JSON Web Tokens para máxima seguridad.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-user-cog fa-3x mb-3 text-success"></i>
+                <h5 class="card-title">Gestión de Usuarios</h5>
+                <p class="card-text">Registro, login y gestión completa de perfiles de usuario.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-lock fa-3x mb-3 text-warning"></i>
+                <h5 class="card-title">Encriptación</h5>
+                <p class="card-text">Contraseñas encriptadas con bcrypt para proteger tu información.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FontAwesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- Script específico para home -->
+<script src="/js/home.js"></script>
