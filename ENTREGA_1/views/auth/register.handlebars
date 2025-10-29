@@ -47,6 +47,20 @@
                         <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Tipo de Cuenta</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="user" selected>👤 Usuario - Acceso estándar</option>
+                            <option value="admin">🔧 Administrador - Acceso completo</option>
+                        </select>
+                        <div class="form-text">
+                            <small class="text-muted">
+                                • <strong>Usuario</strong>: Acceso a funciones básicas<br>
+                                • <strong>Administrador</strong>: Acceso a panel administrativo y gestión completa
+                            </small>
+                        </div>
+                    </div>
+                    
                     <div class="d-grid">
                         <button type="submit" class="btn btn-success">Registrarse</button>
                     </div>

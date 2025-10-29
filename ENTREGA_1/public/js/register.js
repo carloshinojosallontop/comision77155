@@ -83,6 +83,7 @@ class RegisterPage {
         if (!data.email) errors.push('El email es requerido');
         if (!data.age) errors.push('La edad es requerida');
         if (!data.password) errors.push('La contraseña es requerida');
+        if (!data.role) errors.push('El rol es requerido');
 
         // Validar edad mínima
         if (data.age && data.age < 18) {
@@ -98,6 +99,12 @@ class RegisterPage {
         // Validar contraseña mínima
         if (data.password && data.password.length < 6) {
             errors.push('La contraseña debe tener al menos 6 caracteres');
+        }
+
+        // Validar rol
+        const allowedRoles = ['user', 'admin'];
+        if (data.role && !allowedRoles.includes(data.role)) {
+            errors.push('El rol seleccionado no es válido');
         }
 
         return {
@@ -145,7 +152,8 @@ class RegisterPage {
                 last_name: formData.last_name,
                 email: formData.email,
                 age: formData.age,
-                password: formData.password
+                password: formData.password,
+                role: formData.role || 'user'
             };
 
             // Realizar registro

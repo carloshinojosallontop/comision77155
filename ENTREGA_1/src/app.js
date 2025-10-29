@@ -7,13 +7,23 @@ import passport from './config/passport.config.js';
 import authRoutes from './routes/routes.js';
 import './config/db.config.js';
 
-const app = express();
-
-// Para obtener __dirname en ES modules
+// Utilidades de ruta 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuración de Handlebars
+// App
+const app = express();
+
+// --- Middlewares base ---
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(passport.initialize());
+
+// --- Static Files ---
+app.use(express.static(path.join(__dirname, '../public')));
+
+// --- Handlebars ---
 app.engine('handlebars', engine({
     defaultLayout: 'main',
     layoutsDir: path.join(__dirname, '../views/layouts'),
@@ -22,13 +32,7 @@ app.engine('handlebars', engine({
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, '../views'));
 
-//middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../public')));
-app.use(cookieParser());
-
-// Configuración de Passport
+// --- Passport ---
 app.use(passport.initialize());
 
 

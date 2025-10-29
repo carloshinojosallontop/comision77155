@@ -21,7 +21,9 @@ Un sistema de autenticación completo construido con Node.js, Express, MongoDB y
 - **Autenticación JWT**: Sistema seguro de tokens
 - **Gestión de Usuarios**: Registro, login y perfiles
 - **Encriptación**: Contraseñas hasheadas con bcrypt
-- **Control de Roles**: Sistema de permisos (user/admin)
+- **Control de Roles**: Sistema de permisos (user/admin) con registro directo
+- **Arquitectura MVC**: Separación clara de responsabilidades
+- **Validación Robusta**: Middlewares de validación frontend y backend
 - **Cookies Seguras**: JWT almacenado en cookies httpOnly
 - **Responsive**: Interfaz adaptativa con Bootstrap 5
 - **UI Modular**: JavaScript organizado y modular
@@ -143,6 +145,9 @@ npm run stop:db
    - Email (único)
    - Edad (mínimo 18 años)
    - Contraseña (mínimo 6 caracteres)
+   - **Tipo de Cuenta**: 
+     - 👤 Usuario - Acceso estándar
+     - 🔧 Administrador - Acceso completo
 3. Confirma la contraseña
 4. Serás redirigido automáticamente al perfil
 
@@ -187,7 +192,22 @@ curl -X POST http://localhost:3000/api/auth/register \
     "last_name": "Pérez",
     "email": "juan@example.com",
     "age": 25,
-    "password": "password123"
+    "password": "password123",
+    "role": "user"
+  }'
+```
+
+#### Registro de administrador
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "Admin",
+    "last_name": "Sistema",
+    "email": "admin@example.com",
+    "age": 30,
+    "password": "admin123",
+    "role": "admin"
   }'
 ```
 
@@ -209,10 +229,16 @@ entrega_1/
 │   ├── config/
 │   │   ├── db.config.js          # Configuración de MongoDB
 │   │   └── passport.config.js    # Configuración de Passport
+│   ├── controllers/              # 🆕 Controladores (Lógica de negocio)
+│   │   ├── auth.controller.js    # Controlador de autenticación
+│   │   └── admin.controller.js   # Controlador de administración
+│   ├── middlewares/              # 🆕 Middlewares
+│   │   ├── auth.middleware.js    # Middleware de autenticación
+│   │   └── validation.middleware.js # Middleware de validación
 │   ├── models/
 │   │   └── user.model.js         # Modelo de Usuario
 │   ├── routes/
-│   │   └── routes.js             # Rutas de API
+│   │   └── routes.js             # Definición de rutas (solo endpoints)
 │   ├── utils/
 │   │   └── jwt.utils.js          # Utilidades JWT
 │   ├── app.js                    # Configuración Express
@@ -255,14 +281,50 @@ npm run stop:db     # Detiene y elimina contenedor MongoDB
 npm install         # Instala dependencias
 ```
 
+## Arquitectura MVC
+
+El proyecto sigue el patrón **Model-View-Controller** con separación clara de responsabilidades:
+
+### 📁 Modelos (Models)
+- **Ubicación**: `src/models/`
+- **Responsabilidad**: Definición de esquemas y lógica de datos
+- **Ejemplo**: `user.model.js` - Esquema de usuario con validaciones
+
+### 🎮 Controladores (Controllers)
+- **Ubicación**: `src/controllers/`
+- **Responsabilidad**: Lógica de negocio y manejo de peticiones
+- **Archivos**:
+  - `auth.controller.js` - Login, registro, logout, etc.
+  - `admin.controller.js` - Funciones administrativas
+
+### 🛡️ Middlewares
+- **Ubicación**: `src/middlewares/`
+- **Responsabilidad**: Validación, autenticación y autorización
+- **Archivos**:
+  - `auth.middleware.js` - Verificación JWT y roles
+  - `validation.middleware.js` - Validación de datos de entrada
+
+### 🛣️ Rutas (Routes)
+- **Ubicación**: `src/routes/`
+- **Responsabilidad**: Definición de endpoints y aplicación de middlewares
+- **Ejemplo**: `routes.js` - Solo definición de rutas, sin lógica
+
+### 🎨 Vistas (Views)
+- **Ubicación**: `views/`
+- **Responsabilidad**: Presentación y interfaz de usuario
+- **Motor**: Handlebars para templates dinámicos
+
 ## Desarrollo
 
 ### Agregar Nuevas Funcionalidades
 
-1. **Nuevos endpoints**: Agrega rutas en `src/routes/routes.js`
+1. **Nuevos endpoints**: 
+   - Agrega rutas en `src/routes/routes.js`
+   - Crea controladores en `src/controllers/`
 2. **Nuevos modelos**: Crea archivos en `src/models/`
 3. **Nuevas vistas**: Agrega templates en `views/`
 4. **Nuevo JavaScript**: Crea módulos en `public/js/`
+5. **Validaciones**: Agrega middlewares en `src/middlewares/`
 
 ### Debugging
 
@@ -280,8 +342,25 @@ App.debug.clearStorage()      // Limpiar storage
 - **Contraseñas**: Hasheadas con bcrypt (10 salt rounds)
 - **JWT**: Almacenado en cookies httpOnly
 - **Cookies**: Configuradas con sameSite y secure
-- **Validación**: Frontend y backend
+- **Validación Doble**: Frontend (JavaScript) y Backend (Middlewares)
+- **Control de Roles**: Middleware de autorización por roles
+- **Validación de Datos**: Middleware específico para cada endpoint
 - **Headers**: CORS y headers de seguridad
+
+### Validaciones Implementadas
+
+#### Frontend (JavaScript)
+- Validación en tiempo real de formularios
+- Verificación de coincidencia de contraseñas
+- Validación de formato de email
+- Validación de edad mínima (18 años)
+- Validación de roles permitidos
+
+#### Backend (Middlewares)
+- `validateRegisterData`: Validación completa de registro
+- `validateLoginData`: Validación de datos de login
+- `authenticateJWT`: Verificación de tokens JWT
+- `authorizeRole`: Control de acceso por roles
 
 ## Despliegue
 
@@ -298,6 +377,36 @@ NODE_ENV=production
 MONGODB_URI=mongodb://tu-mongo-uri
 JWT_SECRET=tu-secreto-super-seguro
 ```
+
+## Actualizaciones Recientes
+
+### v2.0 - Refactorización MVC y Mejoras de Seguridad
+
+#### 🏗️ **Arquitectura MVC Implementada**
+- **Controladores**: Lógica de negocio separada de rutas
+- **Middlewares**: Validación y autenticación modularizadas
+- **Separación de responsabilidades**: Código más mantenible y escalable
+
+#### 🔧 **Nuevas Funcionalidades**
+- **Registro como Admin**: Los usuarios pueden registrarse directamente como administradores
+- **Validación Robusta**: Doble validación (frontend + backend)
+- **Mejores Mensajes**: Feedback más detallado y claro
+
+#### 🛡️ **Mejoras de Seguridad**
+- **Validación de Roles**: Middleware específico para verificar roles válidos
+- **Sanitización**: Validación exhaustiva de datos de entrada
+- **Control de Acceso**: Mejores verificaciones de permisos
+
+#### 📦 **Eliminación de Código Duplicado**
+- **Utilidades JWT**: Centralizadas en `jwt.utils.js`
+- **DRY Principle**: Eliminación de duplicación entre rutas y utilidades
+- **Configuración Consistente**: Cookies y tokens manejados uniformemente
+
+#### 🎯 **Beneficios**
+- ✅ **Mantenibilidad**: Código más fácil de mantener y extender
+- ✅ **Escalabilidad**: Arquitectura preparada para crecimiento
+- ✅ **Testing**: Componentes fácilmente testeable por separado
+- ✅ **Principios SOLID**: Implementación de mejores prácticas de desarrollo
 
 
 
