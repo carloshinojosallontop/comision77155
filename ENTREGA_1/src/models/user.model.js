@@ -42,14 +42,14 @@ const userSchema = new mongoose.Schema({
 });
 
 // Middleware para encriptar la contraseña antes de guardar
-userSchema.pre('save', function(next) {
+userSchema.pre('save', async function(next) {
   // Solo hashear la contraseña si ha sido modificada (o es nueva)
   if (!this.isModified('password')) return next();
   
   try {
-    // Encriptar la contraseña usando bcrypt.hashSync
+    // Encriptar la contraseña usando bcrypt.hash
     const saltRounds = 10;
-    this.password = bcrypt.hashSync(this.password, saltRounds);
+    this.password = await bcrypt.hash(this.password, saltRounds);
     next();
   } catch (error) {
     next(error);
@@ -57,8 +57,8 @@ userSchema.pre('save', function(next) {
 });
 
 // Método para comparar contraseñas
-userSchema.methods.comparePassword = function(candidatePassword) {
-  return bcrypt.compareSync(candidatePassword, this.password);
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Método para obtener el usuario sin la contraseña

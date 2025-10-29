@@ -19,8 +19,8 @@ passport.use('login', new LocalStrategy({
       return done(null, false, { message: 'Usuario no encontrado' });
     }
     
-    // Verificar contraseña
-    const isValidPassword = user.comparePassword(password);
+    // Verificar contraseña (asíncrono)
+    const isValidPassword = await user.comparePassword(password);
     
     if (!isValidPassword) {
       return done(null, false, { message: 'Contraseña incorrecta' });

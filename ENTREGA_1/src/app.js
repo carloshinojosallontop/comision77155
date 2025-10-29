@@ -4,8 +4,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import passport from './config/passport.config.js';
-import authRoutes from './routes/routes.js';
+import apiRoutes from './routes/routes.js';
+import sessionsRoutes from './routes/sessions.routes.js';
+import viewRoutes from './routes/views.routes.js';
 import './config/db.config.js';
+import { errorHandler, notFoundHandler } from './middlewares/error.middleware.js';
+
 
 // Utilidades de ruta 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,27 +39,13 @@ app.set('views', path.join(__dirname, '../views'));
 // --- Passport ---
 app.use(passport.initialize());
 
+// --- Rutas ---
+app.use('/', viewRoutes);
+app.use('/api', apiRoutes);
+app.use('/api/sessions', sessionsRoutes);
 
-//routes
-app.get('/', (req, res) => {
-    res.render('home', { title: 'Inicio' });
-});
-
-// Rutas de autenticación
-app.get('/login', (req, res) => {
-    res.render('auth/login', { title: 'Iniciar Sesión' });
-});
-
-app.get('/register', (req, res) => {
-    res.render('auth/register', { title: 'Registrarse' });
-});
-
-// Ruta del perfil de usuario
-app.get('/profile', (req, res) => {
-    res.render('profile', { title: 'Mi Perfil' });
-});
-
-// API Routes
-app.use('/api', authRoutes);
+// --- Manejo de Errores ---
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;

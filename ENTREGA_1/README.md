@@ -20,9 +20,12 @@ Un sistema de autenticación completo construido con Node.js, Express, MongoDB y
 
 - **Autenticación JWT**: Sistema seguro de tokens
 - **Gestión de Usuarios**: Registro, login y perfiles
-- **Encriptación**: Contraseñas hasheadas con bcrypt
+- **Encriptación Asíncrona**: Contraseñas hasheadas con bcrypt (no bloquea event loop)
 - **Control de Roles**: Sistema de permisos (user/admin) con registro directo
 - **Arquitectura MVC**: Separación clara de responsabilidades
+- **Middlewares Atómicos**: Funciones específicas y reutilizables
+- **Validación de Sesiones**: Endpoint `/api/sessions/current` para validar JWT
+- **Protección de Rutas**: Middlewares para invitados, autenticados y roles
 - **Validación Robusta**: Middlewares de validación frontend y backend
 - **Cookies Seguras**: JWT almacenado en cookies httpOnly
 - **Responsive**: Interfaz adaptativa con Bootstrap 5
@@ -167,19 +170,25 @@ npm run stop:db
 
 ### Autenticación
 
-| Método | Endpoint | Descripción | Requiere Auth |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/login` | Iniciar sesión | ❌ |
-| POST | `/api/auth/register` | Registrar usuario | ❌ |
-| POST | `/api/auth/logout` | Cerrar sesión | ❌ |
-| GET | `/api/auth/current` | Usuario actual | ✅ |
-| POST | `/api/auth/refresh` | Renovar token | ✅ |
+| Método | Endpoint | Descripción | Middlewares | Requiere Auth |
+|--------|----------|-------------|-------------|---------------|
+| POST | `/api/auth/login` | Iniciar sesión | `requireGuest`, `validateLoginData` | ❌ (Solo invitados) |
+| POST | `/api/auth/register` | Registrar usuario | `requireGuest`, `validateRegisterData` | ❌ (Solo invitados) |
+| POST | `/api/auth/logout` | Cerrar sesión | - | ❌ |
+| GET | `/api/auth/current` | Usuario actual | `requireAuth` | ✅ |
+| POST | `/api/auth/refresh` | Renovar token | `requireAuth` | ✅ |
+
+### Sesiones
+
+| Método | Endpoint | Descripción | Middlewares | Requiere Auth |
+|--------|----------|-------------|-------------|---------------|
+| GET | `/api/sessions/current` | Validar sesión y obtener datos del JWT | `requireAuth` | ✅ |
 
 ### Administración
 
-| Método | Endpoint | Descripción | Requiere Auth |
-|--------|----------|-------------|---------------|
-| GET | `/api/admin` | Panel admin | ✅ (Admin) |
+| Método | Endpoint | Descripción | Middlewares | Requiere Auth |
+|--------|----------|-------------|-------------|---------------|
+| GET | `/api/admin` | Panel admin | `requireAuth`, `requireRole('admin')` | ✅ (Admin) |
 
 ### Ejemplos de Uso
 
@@ -221,6 +230,17 @@ curl -X POST http://localhost:3000/api/auth/login \
   }'
 ```
 
+#### Validar sesión actual
+```bash
+# Verificar usuario logueado y obtener datos del JWT
+curl -X GET http://localhost:3000/api/sessions/current \
+  --cookie "jwt=your-jwt-token"
+
+# O usando Authorization header
+curl -X GET http://localhost:3000/api/sessions/current \
+  -H "Authorization: Bearer your-jwt-token"
+```
+
 ## Estructura del Proyecto
 
 ```
@@ -232,13 +252,16 @@ entrega_1/
 │   ├── controllers/              # 🆕 Controladores (Lógica de negocio)
 │   │   ├── auth.controller.js    # Controlador de autenticación
 │   │   └── admin.controller.js   # Controlador de administración
-│   ├── middlewares/              # 🆕 Middlewares
-│   │   ├── auth.middleware.js    # Middleware de autenticación
-│   │   └── validation.middleware.js # Middleware de validación
+│   ├── middlewares/              # 🆕 Middlewares atómicos
+│   │   ├── auth.middleware.js    # Middlewares de autenticación
+│   │   ├── validation.middleware.js # Middleware de validación
+│   │   └── error.middleware.js   # Middleware de manejo de errores
 │   ├── models/
-│   │   └── user.model.js         # Modelo de Usuario
+│   │   └── user.model.js         # Modelo de Usuario (bcrypt async)
 │   ├── routes/
-│   │   └── routes.js             # Definición de rutas (solo endpoints)
+│   │   ├── routes.js             # Rutas de API (/api/auth/, /api/admin)
+│   │   ├── sessions.routes.js    # 🆕 Rutas de sesiones (/api/sessions/)
+│   │   └── views.routes.js       # 🆕 Rutas de vistas (páginas HTML)
 │   ├── utils/
 │   │   └── jwt.utils.js          # Utilidades JWT
 │   ├── app.js                    # Configuración Express
@@ -297,17 +320,25 @@ El proyecto sigue el patrón **Model-View-Controller** con separación clara de 
   - `auth.controller.js` - Login, registro, logout, etc.
   - `admin.controller.js` - Funciones administrativas
 
-### 🛡️ Middlewares
+### 🛡️ Middlewares Atómicos
 - **Ubicación**: `src/middlewares/`
-- **Responsabilidad**: Validación, autenticación y autorización
+- **Responsabilidad**: Funciones específicas y reutilizables
 - **Archivos**:
-  - `auth.middleware.js` - Verificación JWT y roles
+  - `auth.middleware.js` - Middlewares atómicos de autenticación:
+    - `requireAuth` - Verificación JWT
+    - `requireRole` - Autorización por roles
+    - `requireGuest` - Solo invitados
+    - `optionalAuth` - Autenticación opcional
   - `validation.middleware.js` - Validación de datos de entrada
+  - `error.middleware.js` - Manejo global de errores
 
 ### 🛣️ Rutas (Routes)
 - **Ubicación**: `src/routes/`
 - **Responsabilidad**: Definición de endpoints y aplicación de middlewares
-- **Ejemplo**: `routes.js` - Solo definición de rutas, sin lógica
+- **Archivos**:
+  - `routes.js` - Rutas de API (autenticación y admin)
+  - `sessions.routes.js` - Rutas de sesiones (validación JWT)
+  - `views.routes.js` - Rutas de vistas (páginas HTML)
 
 ### 🎨 Vistas (Views)
 - **Ubicación**: `views/`
@@ -380,6 +411,30 @@ JWT_SECRET=tu-secreto-super-seguro
 
 ## Actualizaciones Recientes
 
+### v2.1 - Middlewares Atómicos y Optimizaciones de Rendimiento
+
+#### 🧩 **Middlewares Atómicos Implementados**
+- **Separación de responsabilidades**: Cada middleware tiene una función específica
+- **`requireAuth`**: Verificación JWT y autenticación
+- **`requireRole(...roles)`**: Autorización por roles específicos
+- **`requireGuest`**: Protección de rutas para invitados únicamente
+- **`optionalAuth`**: Autenticación opcional para comportamiento dinámico
+
+#### 🚀 **Optimizaciones de Rendimiento**
+- **bcrypt Asíncrono**: Migrado de `hashSync/compareSync` a `hash/compare`
+- **Event Loop libre**: No bloquea el event loop bajo carga
+- **Mejor concurrencia**: Manejo simultáneo de múltiples usuarios mejorado
+
+#### 🔐 **Nueva Ruta de Sesiones**
+- **`/api/sessions/current`**: Endpoint específico para validación de sesiones
+- **Cumplimiento de requisitos**: Ruta dedicada para validar JWT y obtener datos del usuario
+- **Compatibilidad mantenida**: Ruta original `/api/auth/current` sigue funcionando
+
+#### 🏗️ **Mejoras de Arquitectura**
+- **Separación de rutas**: API, sesiones y vistas en archivos independientes
+- **Manejo de errores global**: Middleware centralizado para errores
+- **Protección inteligente**: Rutas de login/register bloqueadas para usuarios autenticados
+
 ### v2.0 - Refactorización MVC y Mejoras de Seguridad
 
 #### 🏗️ **Arquitectura MVC Implementada**
@@ -392,21 +447,17 @@ JWT_SECRET=tu-secreto-super-seguro
 - **Validación Robusta**: Doble validación (frontend + backend)
 - **Mejores Mensajes**: Feedback más detallado y claro
 
-#### 🛡️ **Mejoras de Seguridad**
-- **Validación de Roles**: Middleware específico para verificar roles válidos
-- **Sanitización**: Validación exhaustiva de datos de entrada
-- **Control de Acceso**: Mejores verificaciones de permisos
-
 #### 📦 **Eliminación de Código Duplicado**
 - **Utilidades JWT**: Centralizadas en `jwt.utils.js`
 - **DRY Principle**: Eliminación de duplicación entre rutas y utilidades
 - **Configuración Consistente**: Cookies y tokens manejados uniformemente
 
-#### 🎯 **Beneficios**
-- ✅ **Mantenibilidad**: Código más fácil de mantener y extender
-- ✅ **Escalabilidad**: Arquitectura preparada para crecimiento
-- ✅ **Testing**: Componentes fácilmente testeable por separado
-- ✅ **Principios SOLID**: Implementación de mejores prácticas de desarrollo
+#### 🎯 **Beneficios Acumulados**
+- ✅ **Rendimiento**: bcrypt asíncrono mejora la concurrencia
+- ✅ **Seguridad**: Middlewares atómicos y validación de sesiones
+- ✅ **Mantenibilidad**: Código modular y separación clara de responsabilidades
+- ✅ **Escalabilidad**: Arquitectura preparada para crecimiento y alta carga
+- ✅ **UX mejorada**: Protección inteligente de rutas y comportamiento dinámico
 
 
 
