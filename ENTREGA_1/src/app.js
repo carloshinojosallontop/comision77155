@@ -1,14 +1,15 @@
-import express from 'express';
-import { engine } from 'express-handlebars';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import cookieParser from 'cookie-parser';
-import passport from './config/passport.config.js';
-import apiRoutes from './routes/routes.js';
-import sessionsRoutes from './routes/sessions.routes.js';
-import viewRoutes from './routes/views.routes.js';
-import './config/db.config.js';
-import { errorHandler, notFoundHandler } from './middlewares/error.middleware.js';
+
+import path from "path";
+import { fileURLToPath } from "url";
+import express from "express";
+import cookieParser from "cookie-parser";
+import { engine } from "express-handlebars";
+import "./config/db.config.js";
+import passport from "./config/passport.config.js";
+import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
+import apiRoutes from "./routes/routes.js";
+import sessionsRoutes from "./routes/sessions.routes.js";
+import viewRoutes from "./routes/views.routes.js";
 
 
 // Utilidades de ruta 
